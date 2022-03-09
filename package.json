@@ -3,14 +3,12 @@
   "version": "0.0.0",
   "description": "",
   "scripts": {
-    "lint": "npm --prefix ./functions run lint",
     "build": "npm --prefix ./functions run build",
-    "serve": "npm --prefix ./functions run serve",
-    "shell": "npm --prefix ./functions run shell",
-    "start": "npm --prefix ./functions run start",
-    "deploy": "npm --prefix ./functions run deploy",
-    "logs": "npm --prefix ./functions run logs",
-    "postinstall": "npm --prefix ./functions install"
+    "build:watch": "npm --prefix ./functions run build:watch",
+    "deploy": "firebase deploy",
+    "deploy:firebase": "firebase deploy --non-interactive",
+    "postinstall": "npm --prefix ./functions install",
+    "start": "firebase emulators:start"
   },
   "repository": {
     "type": "git",
@@ -20,9 +18,13 @@
     "aog"
   ],
   "author": "Michael Solati mkslt04@gmail.com",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/MichaelSolati/aog-and-typeform/issues"
   },
-  "homepage": "https://github.com/MichaelSolati/aog-and-typeform#readme"
+  "homepage": "https://github.com/MichaelSolati/aog-and-typeform#readme",
+  "devDependencies": {
+    "firebase-tools": "^10.2.2",
+    "npm-run-all": "^4.1.5"
+  }
 }

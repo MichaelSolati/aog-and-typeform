@@ -1,4 +1,5 @@
 # aog-and-typeform
+
 I grew up in the 90s, reading the gripping and petrifying narratives authored by the infamous R. L. Stine. My favorite novels were those where the readers were advised to beware and choose their own scare. These were pick-your-own adventure books, where readers jumped from page to page as they navigated through odd, eerie, and often chilling worlds.
 
 Back then, it was easy to see and understand how these books worked. Years later, as a software developer, I think of them as simple decision trees, a rudimentary form of Artificial Intelligence. Even if not intended to be a form of AI, we as developers often tinker with these concepts in our `if` statements, and `switch` cases, where functions may chain to other functions based on cases, situations, or flags.
@@ -20,7 +21,6 @@ An interesting use is that the platform makes it super easy to make interactive 
 
 Once your chapters and endings are all created, you then need to connect them, and this is where, again, Typeform makes it super easy! Typeform's Logic Jumps (another PRO feature) allows users to see and interact with only parts of the form based on their selection.
 
-
 ![Jump to page 24](https://thepracticaldev.s3.amazonaws.com/i/ru7r483hto88qa3mhztl.gif)
 
 Continuing this process you can build out cases for any scenario, and eventually build out a story like this one…
@@ -29,11 +29,11 @@ Continuing this process you can build out cases for any scenario, and eventually
 
 Yikes, that's an intense story! I have to admit, I didn't create it. It's actually the [Interactive Story Template](https://www.typeform.com/templates/t/interactive-fiction/) provided by Typeform. It provides for a great example of how to use Typeform to make an interactive story.
 
-After my niece and nephew finish composing their very own horror story, such as the esteemed *Beware of the Purple Peanut Butter*, the developer in me asks, "what else can we do here?" While this may be cool, it would be even cooler to be able to TALK through the story. It is a conversational form after all!
+After my niece and nephew finish composing their very own horror story, such as the esteemed _Beware of the Purple Peanut Butter_, the developer in me asks, "what else can we do here?" While this may be cool, it would be even cooler to be able to TALK through the story. It is a conversational form after all!
 
 To be able to talk through a story, we could make it playable on a Google Assistant enabled device, like the Google Home (which my nephew loves to talk to). Four tools can be used to do this: Dialogflow, Firebase, the Google Assistant, and Typeform! We use Dialogflow to handle intents or inputs from users, but we only use the default welcome intent for the intro to our story and the fallback intent for every future interaction. We fulfill these intents via webhook calls to cloud functions that can be hosted on Firebase. A lot of articles exist on the web that explain how to build a basic application for the Google Assistant. I advise you to look at some of them, or possibly take a look at codelabs that [Google provides here](https://developers.google.com/actions/codelabs/).
 
-The real meat (or tofu) and potatoes of our interactive, voice-driven story comes from the Typeform SDK. [Typeform provides APIs and SDKs](https://developers.typeform.com/) for building and managing forms, fetching submissions,  and more. All we're really interested in here is their Create API, which we can use to retrieve the form. Just install the client via NPM:
+The real meat (or tofu) and potatoes of our interactive, voice-driven story comes from the Typeform SDK. [Typeform provides APIs and SDKs](https://developers.typeform.com/) for building and managing forms, fetching submissions, and more. All we're really interested in here is their Create API, which we can use to retrieve the form. Just install the client via NPM:
 
 ```Bash
 npm i @typeform/api-client
@@ -43,7 +43,7 @@ From there, in your `index.js` file, we will add the Typeform client, instantiat
 
 ```JavaScript
 import { createClient } from '@typeform/api-client';
-import { dialogflow } from 'actions-on-google';
+import { actionssdk } from 'actions-on-google';
 import * as functions from 'firebase-functions';
 
 // Available at https://admin.typeform.com/account#/section/tokens
@@ -63,7 +63,7 @@ typeformForm.then(f => resolvedForm = f);
 Finally, now that we have the form data, we can create our handler for the Dialogflow webhooks, and we'll start with the default intent.
 
 ```JavaScript
-const app = dialogflow();
+const app = actionssdk();
 app.intent('Default Welcome Intent', (conv) => {
     const slide = new Slide(conv, resolvedForm);
     slide.run();
@@ -100,7 +100,7 @@ We cycle through the choices of the current field the user is presented with and
 
 With that information assigned to the `conv.data` when the user makes their next choice, we can determine if their choice was valid, and what the next field should be. Then it's rinse, cycle, repeat as the user makes their way through the gripping tale.
 
-If you want to see what that's like, just find a Google Home (or use your Android phone) and say, "Ok Google, talk to *A Dreadful Start*."
+If you want to see what that's like, just find a Google Home (or use your Android phone) and say, "Ok Google, talk to _A Dreadful Start_."
 
 The experience is completely built on Typeform. You can find all of the [code available here](https://github.com/MichaelSolati/aog-and-typeform). It's also available for you to try on your Assistant powered devices, you can send it to any of your devices [from here](https://assistant.google.com/services/a/uid/0000001b7df4bf67?hl=en).
 

@@ -1,32 +1,34 @@
-import { createClient } from '@typeform/api-client'
-import { dialogflow } from 'actions-on-google';
+import {createClient, Typeform} from '@typeform/api-client';
+import {actionssdk} from 'actions-on-google';
 import * as functions from 'firebase-functions';
 
-import { ITypeformForm } from './interfaces';
-import { Slide } from './slide';
+import {Slide} from './slide';
 
-const typeform = createClient({ token: functions.config().typeform.token });
-const typeformForm = typeform.forms.get({ uid: functions.config().typeform.form });
-
-let resolvedForm;
-typeformForm.then(f => resolvedForm = new Promise(r => r(f)));
-const form = (): Promise<ITypeformForm> => resolvedForm ? resolvedForm : typeformForm;
-
-const app = dialogflow({ debug: false });
-
-app.intent('Default Welcome Intent', (conv) => {
-  return form().then((p) => {
-    const slide = new Slide(conv, p);
-    conv.add(`Welcome to ${p.title}.\n${p.welcome_screens[0].title}\n`);
-    slide.run();
-  });
+const typeform = createClient({token: functions.config().typeform?.token});
+const typeformForm = typeform.forms.get({
+  uid: functions.config().typeform?.form,
 });
 
-app.intent('Default Fallback Intent', (conv) => {
-  return form().then((p) => {
-    const slide = new Slide(conv, p);
-    slide.run();
-  });
+let resolvedForm: Promise<Typeform.Form> | null;
+typeformForm.then(f => (resolvedForm = Promise.resolve(f)));
+const form = (): Promise<Typeform.Form> =>
+  resolvedForm ? resolvedForm : typeformForm;
+
+const app = actionssdk({debug: false});
+
+app.intent('Default Welcome Intent', async conv => {
+  const p = await form();
+  const slide = new Slide(conv, p);
+  conv.add(`Welcome to ${p.title}.\n${p?.welcome_screens?.[0].title}\n`);
+  slide.run();
+  return;
+});
+
+app.intent('Default Fallback Intent', async conv => {
+  const p = await form();
+  const slide = new Slide(conv, p);
+  slide.run();
+  return;
 });
 
 export const aog = functions.https.onRequest(app);
