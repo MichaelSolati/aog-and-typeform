@@ -31,7 +31,7 @@ Yikes, that's an intense story! I have to admit, I didn't create it. It's actual
 
 After my niece and nephew finish composing their very own horror story, such as the esteemed _Beware of the Purple Peanut Butter_, the developer in me asks, "what else can we do here?" While this may be cool, it would be even cooler to be able to TALK through the story. It is a conversational form after all!
 
-To be able to talk through a story, we could make it playable on a Google Assistant enabled device, like the Google Home (which my nephew loves to talk to). Four tools can be used to do this: Dialogflow, Firebase, the Google Assistant, and Typeform! We use Dialogflow to handle intents or inputs from users, but we only use the default welcome intent for the intro to our story and the fallback intent for every future interaction. We fulfill these intents via webhook calls to cloud functions that can be hosted on Firebase. A lot of articles exist on the web that explain how to build a basic application for the Google Assistant. I advise you to look at some of them, or possibly take a look at codelabs that [Google provides here](https://developers.google.com/actions/codelabs/).
+To be able to talk through a story, we could make it playable on a Google Assistant enabled device, like the Google Home (which my nephew loves to talk to). Three tools can be used to do this: Firebase, Actions on Google, and Typeform! We use Actions on Google to handle intents or inputs from users, but we only use the default welcome handler for the intro to our story and the fallback handler for every future interaction. We fulfill these requests via webhook calls to cloud functions that can be hosted on Firebase. A lot of articles exist on the web that explain how to build a basic application for the Google Assistant. I advise you to look at some of them, or possibly take a look at codelabs that [Google provides here](https://developers.google.com/actions/codelabs/).
 
 The real meat (or tofu) and potatoes of our interactive, voice-driven story comes from the Typeform SDK. [Typeform provides APIs and SDKs](https://developers.typeform.com/) for building and managing forms, fetching submissions, and more. All we're really interested in here is their Create API, which we can use to retrieve the form. Just install the client via NPM:
 
@@ -42,8 +42,8 @@ npm i @typeform/api-client
 From there, in your `index.js` file, we will add the Typeform client, instantiate it, and then get the form.
 
 ```JavaScript
-import { createClient } from '@typeform/api-client';
-import { actionssdk } from 'actions-on-google';
+import {conversation} from '@assistant/conversation';
+import {createClient} from '@typeform/api-client';
 import * as functions from 'firebase-functions';
 
 // Available at https://admin.typeform.com/account#/section/tokens
@@ -63,10 +63,11 @@ typeformForm.then(f => resolvedForm = f);
 Finally, now that we have the form data, we can create our handler for the Dialogflow webhooks, and we'll start with the default intent.
 
 ```JavaScript
-const app = actionssdk();
-app.intent('Default Welcome Intent', (conv) => {
-    const slide = new Slide(conv, resolvedForm);
-    slide.run();
+const app = conversation();
+app.handle('welcome', conv => {
+  const slide = new Slide(conv, resolvedForm);
+  conv.add(`Welcome to ${p.title}.\n${p?.welcome_screens?.[0].title}\n`);
+  slide.run();
 });
 export const aog = functions.https.onRequest(app);
 ```
@@ -78,13 +79,13 @@ When a user first speaks to the application, we grab the details of the first fo
 ```JavaScript
 conv.add(`Welcome to ${tf.title}. ${tf.welcome_screens[0].title}`);
 conv.add(`${tf.fields[0].title}... What would you like to do? ${choices()}`);
-conv.data = data();
+conv.session.params = session();
 ```
 
-That gets recited to the user. But what is also sent back, which remains hidden, is details about the options they have and which field the options take a user. That's where the `conv.data` gets assigned to the result of a call to the `data` function.
+That gets recited to the user. But what is also sent back, which remains hidden, is details about the options they have and which field the options take a user. That's where the `conv.session.params` gets assigned to the result of a call to the `session` function.
 
 ```JavaScript
-function data() {
+function session() {
     const choices = field.properties.choices.map((c) => { return { label: c.label, ref: c.ref }; });
     const actions = tf.logic.find((v) => v.ref === field.ref).actions;
     const options = [];
@@ -98,7 +99,7 @@ function data() {
 
 We cycle through the choices of the current field the user is presented with and then search through the logic (a field returned via the SDK). We do this so we can see what field a choice will send a user to next (aka, jump to page 24). Then, finally, we return the data of the field the user is currently on, their options, and the fields their options go to.
 
-With that information assigned to the `conv.data` when the user makes their next choice, we can determine if their choice was valid, and what the next field should be. Then it's rinse, cycle, repeat as the user makes their way through the gripping tale.
+With that information assigned to the `conv.session.params` when the user makes their next choice, we can determine if their choice was valid, and what the next field should be. Then it's rinse, cycle, repeat as the user makes their way through the gripping tale.
 
 If you want to see what that's like, just find a Google Home (or use your Android phone) and say, "Ok Google, talk to _A Dreadful Start_."
 

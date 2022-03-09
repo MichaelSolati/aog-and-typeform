@@ -1,5 +1,5 @@
+import {conversation} from '@assistant/conversation';
 import {createClient, Typeform} from '@typeform/api-client';
-import {actionssdk} from 'actions-on-google';
 import * as functions from 'firebase-functions';
 
 import {Slide} from './slide';
@@ -14,21 +14,19 @@ typeformForm.then(f => (resolvedForm = Promise.resolve(f)));
 const form = (): Promise<Typeform.Form> =>
   resolvedForm ? resolvedForm : typeformForm;
 
-const app = actionssdk({debug: false});
+const app = conversation({debug: false});
 
-app.intent('Default Welcome Intent', async conv => {
+app.handle('welcome', async conv => {
   const p = await form();
   const slide = new Slide(conv, p);
   conv.add(`Welcome to ${p.title}.\n${p?.welcome_screens?.[0].title}\n`);
   slide.run();
-  return;
 });
 
-app.intent('Default Fallback Intent', async conv => {
+app.handle('fallback', async conv => {
   const p = await form();
   const slide = new Slide(conv, p);
   slide.run();
-  return;
 });
 
 export const aog = functions.https.onRequest(app);

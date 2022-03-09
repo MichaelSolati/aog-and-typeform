@@ -10,8 +10,8 @@
     "node": "14"
   },
   "dependencies": {
+    "@assistant/conversation": "^3.8.1",
     "@typeform/api-client": "^1.7.0",
-    "actions-on-google": "^3.0.0",
     "firebase-admin": "~10.0.2",
     "firebase-functions": "^3.18.1",
     "fuse.js": "^6.5.3"

@@ -1,9 +1,9 @@
-export interface IDataOption {
+export interface DataOption {
   label: string | undefined;
   value: string | undefined;
 }
 
-export interface IData {
+export interface SessionParams {
   ref: string | undefined;
-  options: IDataOption[];
+  options: DataOption[];
 }
